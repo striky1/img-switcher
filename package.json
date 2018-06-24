@@ -1,0 +1,40 @@
+{
+  "name": "img-switcher",
+  "version": "1.0.0",
+  "description": "Switch images after JS is loaded to target resolution by breakpoints. Available in VanillaJS or TypeScript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": {
+    "name": "Lukáš Strišovský",
+    "email": "info@striky.sk",
+    "url": "https://www.striky.sk"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/striky1/img-switcher"
+  },
+  "keywords": [
+    "switch images",
+    "reload images",
+    "preload images",
+    "first load image",
+    "retina display",
+    "vanillaJS",
+    "typeScript"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@types/gulp": "^4.0.5",
+    "@types/gulp-uglify": "^3.0.5",
+    "gulp": "^4.0.0",
+    "gulp-typescript": "^4.0.2",
+    "gulp-uglify": "^3.0.0",
+    "ts-node": "^5.0.1",
+    "typescript": "^2.8.1"
+  },
+  "devDependencies": {
+    "tslint": "^5.10.0"
+  }
+}

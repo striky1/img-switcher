@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "declaration": false,
+    "removeComments": true,
+    "noLib": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "pretty": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitUseStrict": false,
+    "noFallthroughCasesInSwitch": true
+  },
+  "files": [
+    "gulpfile.ts"
+  ],
+  "include": [
+    "src/javascripts/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "public"
+  ]
+}
