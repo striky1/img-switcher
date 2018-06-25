@@ -1,10 +1,10 @@
 # Image Switcher
 
-Switch images after JS is loaded to target resolution by breakpoints.
+Switch images to target resolution by breakpoints after JavaScript is loaded.
 
 ImgSwitcher allows you load image by breakpoints and by DPI's (retina display).
 You can define how many breakpoints you want to detect, how much DPI you want to check (@2x, @3x, etc.) 
-and also you can have another type of image as first image and others loaded by ImgSwitcher with another type.
+and also you can have a different file type for the original image than the image type that is loaded by ImgSwitcher.
 
 ## Installation
 
@@ -34,12 +34,11 @@ If you want configure options (see **Available options** described below), you c
 
     imgSwitcher.setOptions(options);
 
-If you need reload list of images for example after you lazy load new images on website, 
-you can call `getImages()` function on existing instance:
+If you need reload list of images (due to lazy load, etc.), you can call `getImages()` function on existing instance:
 
     imgSwitcher.getImages();
 
-and after that or often you will want use listener for resize width of viewport, so, 
+and after that or often you will want to use listener for resize width of viewport, so, 
 in these cases you can simply call on existing instance `runImgSwitcher()` function:
 
     imgSwitcher.runImgSwitcher();
@@ -64,18 +63,18 @@ in these cases you can simply call on existing instance `runImgSwitcher()` funct
 #### Via JS/TS
 
 Object of options can contains:
- - **attributes** = list of name data attributes, see described bellow
+ - **attributes** = list of data attributes names, see described bellow
  - **breakpoints** = list of breakpoints, which you want to handle
  - **cssClass** = base class selector for ImgSwitcher
  - **cssStyleClass** = class which is removed from image when is loaded new image
- - **debug** = boolean for enable/disable echo to console.log some part of code for debugging
+ - **debug** = boolean for enable/disable debugging via console.log for some part of code
  - **multiplier** = list of resolution multipliers, which you want to handle, e.g. retina display (@2x, @3x, etc.)
  
 Also, you can set name of data attributes on image for specify separately settings for each of images:
  - **data-img-switcher-bp** = list of breakpoints divided by comma (e.g.: "320,640,960")
  - **data-img-switcher-lbp** = last used breakpoint
- - **data-img-switcher-mp** = list of multipliers divided by commma (e.g.: "1,2,3")
- - **data-img-switcher-te** = target extension it is used for example for SVG elements, where you must to define 
+ - **data-img-switcher-mp** = list of multipliers divided by comma (e.g.: "1,2,3")
+ - **data-img-switcher-te** = target extension it is used for example for SVG elements, where you have to define 
                           which type of new image will be loaded (e.g.: "png", "jpg", etc.)
                           
 Example of default options:
@@ -123,14 +122,14 @@ Name of file in situation of three breakpoints (320, 960, 1280) and for @1x, @2x
  
 ## Known issues
 
-- *Image is not loaded if script did not found image* 
+- *Image is not loaded if script can't find image* 
     - yes, if you forgot add for example `nameOfimage-960.jpg` on your FTP or somewhere, script 
-    don't trying to find closest higher available image. It is because this should be potential overkill for calling 
-    many calls to server trying to find available variant of image. If you need to have for example four breakpoints 
-    globally on images but for one of them just for example two breakpoints, use data attributes to define breakpoints 
+    doesn't try to find closest higher available image. It is because this could be potential overkill for 
+    many calls to server, trying to find available variant of image. If you need to have for example four global breakpoints 
+    on images but you want just two on one of the images, use data attributes to define breakpoints 
     for this image.
     
-If you found a **bug**, please, create a issue. 
+If you find a **bug**, please, create a issue. 
 
 ## Contributing
 
@@ -147,7 +146,7 @@ If you found a **bug**, please, create a issue.
 
 4. Make your changes.
    - please, make a **manual testing**
-   - **update documentation** (README.md).
+   - **update documentation** (README.md, CHANGELOG.md)
    - **update examples** if it's necessary
 
 5. Commit, push and create a pull request
@@ -169,6 +168,18 @@ or
 ### Rules
 
 Please, install and use TSLint for keeping code style!
+
+### Changelog
+
+There are four base categories:
+ - Highlights
+    - short description
+ - Bug Fixes
+    - list of bugs (linked to issue if exists and to commit)
+ - Features
+    - list of features (linked to feature if exists and to commit)
+ - Performance Improvements
+    - list of features (linked to feature if exists and to commit)
 
 ## Contact
 
