@@ -1,6 +1,6 @@
 {
   "name": "img-switcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Switch images after JS is loaded to target resolution by breakpoints. Available in VanillaJS or TypeScript.",
   "main": "index.js",
   "scripts": {
