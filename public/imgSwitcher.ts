@@ -1,8 +1,33 @@
+import Timer = NodeJS.Timer;
+
+// Polyfill for Element.closest()
+if (!Element.prototype.closest) {
+    Element.prototype.closest = function (s: any) {
+        let el = this;
+        if (!document.documentElement.contains(el)) {
+            return null;
+        }
+        do {
+            if (el.matches(s)) {
+                return el;
+            }
+            el = el.parentElement || el.parentNode;
+        } while (el !== null && el.nodeType === 1);
+        return null;
+    };
+}
+
 export interface ImgSwitcherOptions {
     attributes: ImgSwitcherAttributes;
     breakpoints?: Array<number>;
     cssClass?: string;
     cssStyleClass?: string;
+    closestCssStyleClass?: {
+        find: string,
+        remove: string
+    };
+    observerOptions?: string;
+    enableLazyLoadOnAllImages?: boolean;
     debug?: boolean;
     multiplier?: Array<number>;
 }
@@ -12,6 +37,7 @@ export interface ImgSwitcherAttributes {
     lastBreakpoint: string;
     multipliers: string;
     targetExtension: string;
+    lazyLoading: string;
 }
 
 /**
@@ -41,29 +67,39 @@ export interface ImgSwitcherAttributes {
  *      - data-img-switcher-bp = list of breakpoints divided by comma (e.g.: "320,640,960")
  *      - data-img-switcher-lbp = last used breakpoint
  *      - data-img-switcher-mp = list of multipliers divided by commma (e.g.: "1,2,3")
- *      - data-img-switcher-te = target extension it is used for SVG elements, where you must to define which type of
- *                               new image will be loaded (e.g.: "png", "jpg", etc.)
+ *      - data-img-switcher-te = target extension it is used for example for SVG elements, where you must to define
+ *                               which type of new image will be loaded (e.g.: "png", "jpg", etc.)
  *
  * @author Lukáš Strišovský, 2018 <info@striky.sk>
  * @license The MIT License, see LICENSE for more information
  */
 export class ImgSwitcher {
+
     private static instance: ImgSwitcher;
     private options: ImgSwitcherOptions = {
         attributes: {
             breakpoints: 'data-img-switcher-bp',
             lastBreakpoint: 'data-img-switcher-lbp',
             multipliers: 'data-img-switcher-mp',
-            targetExtension: 'data-img-switcher-te'
+            targetExtension: 'data-img-switcher-te',
+            lazyLoading: 'data-img-switcher-ll'
         },
         breakpoints: [320, 640, 768, 1024, 1280, 1920],
         cssClass: 'js-img-switcher',
         cssStyleClass: 'o-img-switcher',
+        closestCssStyleClass: {
+            find: 'o-loader',
+            remove: 'o-loader--is-loading'
+        },
+        observerOptions: '200% 0% 200%',
+        enableLazyLoadOnAllImages: true,
         debug: false,
         multiplier: [1, 2]
     };
-    private images: NodeListOf<HTMLElement>;
+    private images: HTMLElement[] = [];
     private multiplier: number;
+
+    public observer: IntersectionObserver;
 
     private constructor() {}
 
@@ -108,7 +144,69 @@ export class ImgSwitcher {
         return higherMinValue !== null ? higherMinValue : lowerMaxValue;
     }
 
-    public initImgSwitcher() {
+    private initIntersectionObserver(): void {
+        if (this.options.observerOptions) {
+            this.observer = new IntersectionObserver(
+                    this.onEntryIntersectionObserver,
+                    {rootMargin: this.options.observerOptions}
+                );
+
+            if (this.images.length > 0) {
+                let tempImages: HTMLElement[] = [];
+
+                for (const image of this.images) {
+                    if (this.enabledLazyLoad(image)) {
+                        this.observer.observe(image);
+                    } else {
+                        tempImages.push(image);
+                    }
+                }
+
+                this.images = tempImages;
+                tempImages = null;
+            }
+        }
+    }
+
+    private enabledLazyLoad(el: HTMLElement): boolean {
+        let result = false;
+
+        if (this.options.enableLazyLoadOnAllImages) {
+            if (el.hasAttribute(this.options.attributes.lazyLoading)
+                && el.getAttribute(this.options.attributes.lazyLoading) === 'true') {
+                result = true;
+            } else {
+                result = true;
+            }
+        } else {
+            if (el.hasAttribute(this.options.attributes.lazyLoading)
+                && el.getAttribute(this.options.attributes.lazyLoading) === 'true') {
+                result = true;
+            }
+        }
+
+        return result;
+    }
+
+    private onEntryIntersectionObserver(entry: IntersectionObserverEntry[]): void {
+        entry.forEach((change: IntersectionObserverEntry) => {
+            if (change.intersectionRatio) {
+                const imgSwitcherInstance = ImgSwitcher.getInstance();
+
+                imgSwitcherInstance.runImgSwitcher([change.target as HTMLElement]);
+                imgSwitcherInstance.observer.unobserve(change.target);
+            }
+        });
+    }
+
+    private removeClosestClass(el: HTMLElement): void {
+        const closestEl = el.closest('.' + this.options.closestCssStyleClass.find);
+        if (closestEl) {
+            closestEl.classList.remove(this.options.closestCssStyleClass.remove);
+        }
+    }
+
+    public initImgSwitcher(): void {
         this.getImages();
         this.getMultiplier();
 
@@ -120,11 +218,10 @@ export class ImgSwitcher {
         this.runImgSwitcher();
     }
 
-    public runImgSwitcher() {
-        if (this.images.length > 0) {
-            for (let i = 0; i < this.images.length; i++) {
-                const image = this.images[i],
-                    imageLastBreakpoint = parseInt(image.getAttribute(this.options.attributes.lastBreakpoint), 10),
+    public runImgSwitcher(images = this.images): void {
+        if (images.length > 0) {
+            for (const image of images) {
+                const imageLastBreakpoint = parseInt(image.getAttribute(this.options.attributes.lastBreakpoint), 10),
                     imageTargetExtension = image.getAttribute(this.options.attributes.targetExtension) ? image.getAttribute(this.options.attributes.targetExtension) : null;
 
                 let imageWidth = 0,
@@ -187,6 +284,10 @@ export class ImgSwitcher {
                                 img.setAttribute('src', newImgSrc);
                                 img.classList.remove(this.options.cssStyleClass);
 
+                                if (this.enabledLazyLoad(img)) {
+                                    this.removeClosestClass(img);
+                                }
+
                                 newImage = null;
                             }
                         )(image, newImageSrc);
@@ -220,6 +321,10 @@ export class ImgSwitcher {
                                 img.parentNode.insertBefore(newChildImg, img);
                                 img.remove();
 
+                                if (this.enabledLazyLoad(newChildImg)) {
+                                    this.removeClosestClass(newChildImg);
+                                }
+
                                 newImage = null;
                                 newChildImg = null;
                             }
@@ -230,6 +335,10 @@ export class ImgSwitcher {
                         newImage.onload = ((img, newImgSrc, options) => () => {
                                 img.style.backgroundImage = 'url(' + newImgSrc + ')';
                                 img.classList.remove(options.cssStyleClass);
+
+                                if (this.enabledLazyLoad(img)) {
+                                    this.removeClosestClass(img);
+                                }
 
                                 newImage = null;
                             }
@@ -246,12 +355,20 @@ export class ImgSwitcher {
         }
     }
 
-    public setOptions(_options: ImgSwitcherOptions) {
+    public setOptions(_options: ImgSwitcherOptions): void {
         this.options = {...this.options, ..._options};
     }
 
-    public getImages(): NodeListOf<HTMLElement> {
-        return this.images = (document.querySelectorAll('.' + this.options.cssClass) as NodeListOf<HTMLElement>);
+    public getImages(): HTMLElement[] {
+        const images = document.querySelectorAll('.' + this.options.cssClass);
+
+        for (let i = 0; i < images.length; i++) {
+            this.images.push(images[i] as HTMLElement);
+        }
+
+        this.initIntersectionObserver();
+
+        return this.images;
     }
 
     private getMultiplier(multipliers: Array<number> = this.options.multiplier): number {
@@ -281,3 +398,17 @@ export class ImgSwitcher {
         }
     }
 }
+
+const imgSwitcher = ImgSwitcher.getInstance();
+imgSwitcher.initImgSwitcher();
+
+let timer: Timer;
+window.addEventListener('resize', () => {
+    if (timer) {
+        clearTimeout(timer);
+    }
+    timer = setTimeout( () => {
+        imgSwitcher.getImages();
+        imgSwitcher.runImgSwitcher();
+    }, 333);
+}, true);

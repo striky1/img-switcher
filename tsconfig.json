@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "target": "es5",
     "declaration": false,
     "removeComments": true,
     "noLib": false,

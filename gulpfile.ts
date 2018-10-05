@@ -19,7 +19,7 @@ gulp.task('compileJStoTS', () => {
 
     return gulp.src(source + '**/*.ts')
         .pipe(tsProject())
-        .pipe(gulpUglify())
+        // .pipe(gulpUglify())
         .pipe(gulp.dest(dest));
 });
 
